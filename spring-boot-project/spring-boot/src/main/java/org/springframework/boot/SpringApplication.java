@@ -286,12 +286,16 @@ public class SpringApplication {
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public SpringApplication(ResourceLoader resourceLoader, Class<?>... primarySources) {
+
+		// 初始化相关参数
 		this.resourceLoader = resourceLoader;
 		Assert.notNull(primarySources, "PrimarySources must not be null");
+
 		this.primarySources = new LinkedHashSet<>(Arrays.asList(primarySources));
 		this.webApplicationType = WebApplicationType.deduceFromClasspath();
 		this.bootstrapRegistryInitializers = new ArrayList<>(
 				getSpringFactoriesInstances(BootstrapRegistryInitializer.class));
+
 		setInitializers((Collection) getSpringFactoriesInstances(ApplicationContextInitializer.class));
 		setListeners((Collection) getSpringFactoriesInstances(ApplicationListener.class));
 		this.mainApplicationClass = deduceMainApplicationClass();
@@ -316,29 +320,67 @@ public class SpringApplication {
 	 * @return a running {@link ApplicationContext}
 	 */
 	public ConfigurableApplicationContext run(String... args) {
+		// 1.监视器，计算启动改动时间
 		Startup startup = Startup.create();
+
 		if (this.registerShutdownHook) {
 			SpringApplication.shutdownHook.enableShutdownHookAddition();
 		}
+
+		// 默认的ioc容器初始化，bootstrapContext为项目启动时的容器
+		// https://blog.csdn.net/qq_36234720/article/details/129995414
 		DefaultBootstrapContext bootstrapContext = createBootstrapContext();
+
+		// 常规的ioc容器，继承自ApplicationContext
 		ConfigurableApplicationContext context = null;
+
+		// 设置系统变量  java.awt.headless
 		configureHeadlessProperty();
+
+
+		// SpringApplicationRunListeners 规定了SpringBoot的生命周期，在各个生命周期广播相应的事件，调用实际的ApplicationListener类
+		// https://blog.csdn.net/u011179993/article/details/51555690
 		SpringApplicationRunListeners listeners = getRunListeners(args);
+		// 启动监听器
 		listeners.starting(bootstrapContext, this.mainApplicationClass);
+
 		try {
+
+			// 应用启动参数
+			//https://blog.csdn.net/weter_drop/article/details/108311428
 			ApplicationArguments applicationArguments = new DefaultApplicationArguments(args);
+
+			// 获取应用配置
 			ConfigurableEnvironment environment = prepareEnvironment(listeners, bootstrapContext, applicationArguments);
+
+			// 准备启动banner
 			Banner printedBanner = printBanner(environment);
+
+			// 创建spring应用上下文
 			context = createApplicationContext();
+
+			// 设置上下文的启动定时器
 			context.setApplicationStartup(this.applicationStartup);
+
+			// 准备上下文
 			prepareContext(bootstrapContext, context, environment, listeners, applicationArguments, printedBanner);
+
+			// 刷新配置
 			refreshContext(context);
+
+			// 刷新配置后续处理
 			afterRefresh(context, applicationArguments);
+
+			// 启动计时器
 			startup.started();
 			if (this.logStartupInfo) {
 				new StartupInfoLogger(this.mainApplicationClass, environment).logStarted(getApplicationLog(), startup);
 			}
+
+			// 监听启动
 			listeners.started(context, startup.timeTakenToStarted());
+
+			//
 			callRunners(context, applicationArguments);
 		}
 		catch (Throwable ex) {
@@ -1376,6 +1418,7 @@ public class SpringApplication {
 	 * @return the running {@link ApplicationContext}
 	 */
 	public static ConfigurableApplicationContext run(Class<?>[] primarySources, String[] args) {
+		// 创建一个springApplication对象，并开始执行
 		return new SpringApplication(primarySources).run(args);
 	}
 
