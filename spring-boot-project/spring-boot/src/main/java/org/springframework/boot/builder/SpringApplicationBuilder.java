@@ -74,6 +74,7 @@ import org.springframework.util.StringUtils;
  */
 public class SpringApplicationBuilder {
 
+	//
 	private final SpringApplication application;
 
 	private volatile ConfigurableApplicationContext context;

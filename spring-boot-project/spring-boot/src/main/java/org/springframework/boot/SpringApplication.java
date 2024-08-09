@@ -202,6 +202,16 @@ public class SpringApplication {
 
 	private static final Log logger = LogFactory.getLog(SpringApplication.class);
 
+	/**
+	 注册在jvm里面的清理钩子：确保应用在退出前能够进行优雅的资源释放和状态清理，从而避免内存泄漏或其他未预期的问题
+	 jvm关闭时此钩子会触发，执行以下一系列操作
+		1. 关闭Spring应用上下文（ApplicationContext），这会触发容器内所有bean的销毁生命周期方法
+		2. 释放资源，比如数据库连接、网络连接或文件句柄等
+		3. 清理日志资源，确保所有的日志信息都已经正确写入到日志文件中
+		4. 执行任何用户自定义的shutdown回调逻辑，例如实现DisposableBean接口的bean或使用@PreDestroy注解的方法
+
+	 另：jvm 接收到关闭信号，无论是通过正常关机、系统中断还是其他方式，都会启动注册过的所有shutdown hook
+	 */
 	static final SpringApplicationShutdownHook shutdownHook = new SpringApplicationShutdownHook();
 
 	private static final ThreadLocal<SpringApplicationHook> applicationHook = new ThreadLocal<>();
@@ -1072,6 +1082,7 @@ public class SpringApplication {
 	 * @see #getShutdownHandlers()
 	 */
 	public void setRegisterShutdownHook(boolean registerShutdownHook) {
+		// 非web环境下使用ioc容器，需要优雅的关闭，并调用singleton的bean相应destory回调方法，需要在jvm里注册一个关闭钩子
 		this.registerShutdownHook = registerShutdownHook;
 	}
 
