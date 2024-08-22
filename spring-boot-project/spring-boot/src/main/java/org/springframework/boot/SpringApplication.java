@@ -333,15 +333,16 @@ public class SpringApplication {
 		// 1.监视器，计算启动改动时间
 		Startup startup = Startup.create();
 
-		if (this.registerShutdownHook) {
+		// 2. 注册一个销毁的回调钩子
+		if (this.registerShutdownHook) { // 默认为true
 			SpringApplication.shutdownHook.enableShutdownHookAddition();
 		}
 
-		// 默认的ioc容器初始化，bootstrapContext为项目启动时的容器
+		// 3. 默认的ioc容器初始化，bootstrapContext为项目启动时的容器
 		// https://blog.csdn.net/qq_36234720/article/details/129995414
 		DefaultBootstrapContext bootstrapContext = createBootstrapContext();
 
-		// 常规的ioc容器，继承自ApplicationContext
+		// 4. 常规的ioc容器，继承自ApplicationContext
 		ConfigurableApplicationContext context = null;
 
 		// 设置系统变量  java.awt.headless
