@@ -30,13 +30,17 @@ import org.springframework.util.Assert;
 /**
  * Default {@link ConfigurableBootstrapContext} implementation.
  *
+ *
  * @author Phillip Webb
  * @since 2.4.0
  */
+// DefaultBootstrapContext 在springboot 应用程序的引导阶段使用，提供了一种注册和检索在引导过程中需要的对象实例的方式
 public class DefaultBootstrapContext implements ConfigurableBootstrapContext {
 
+	// 经InstanceSupplier对象与其对应的类类型存储在一起
 	private final Map<Class<?>, InstanceSupplier<?>> instanceSuppliers = new HashMap<>();
 
+	// 存储对象的实际实例
 	private final Map<Class<?>, Object> instances = new HashMap<>();
 
 	private final ApplicationEventMulticaster events = new SimpleApplicationEventMulticaster();
