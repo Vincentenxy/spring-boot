@@ -342,14 +342,16 @@ public class SpringApplication {
 		// https://blog.csdn.net/qq_36234720/article/details/129995414
 		DefaultBootstrapContext bootstrapContext = createBootstrapContext();
 
-		// 4. 常规的ioc容器，继承自ApplicationContext
+		// 4. 创建一个常规的ioc容器，继承自ApplicationContext
 		ConfigurableApplicationContext context = null;
 
-		// 设置系统变量  java.awt.headless
+		// 5. 设置系统变量  java.awt.headless=true 应用无显示设备可用，只能处理一些非可视化工作
+		// 	如果应用不需要任何head，那么有无这个配置没有任何影响
+		// 	如果应用有弹出窗口之类的操作，那么在headless模式下这种操作会被阻止
 		configureHeadlessProperty();
 
 
-		// SpringApplicationRunListeners 规定了SpringBoot的生命周期，在各个生命周期广播相应的事件，调用实际的ApplicationListener类
+		// 6. SpringApplicationRunListeners是SpringApplicationRunListener的集合，规定了SpringBoot的生命周期，在各个生命周期广播相应的事件，调用实际的ApplicationListener类
 		// https://blog.csdn.net/u011179993/article/details/51555690
 		SpringApplicationRunListeners listeners = getRunListeners(args);
 		// 启动监听器

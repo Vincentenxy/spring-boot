@@ -16,6 +16,11 @@
 
 package org.springframework.wx;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.springframework.boot.SpringApplication;
 
 /**
@@ -30,6 +35,15 @@ public class Test {
 		// 这里可以调用 SpringApplication 提供的 setXX 或 addXX 方法来定制化设置
 
 		springApplication.run(args);
+	}
+
+
+	public void test() {
+		int[] nums = new int[5];
+		Arrays.sort(nums);
+		List<List<Integer>> arr =  new ArrayList<>();
+		arr.add(Arrays.asList(1, 2, 3));
+
 	}
 
 }

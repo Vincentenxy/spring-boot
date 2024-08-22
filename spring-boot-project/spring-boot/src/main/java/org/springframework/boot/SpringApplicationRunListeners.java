@@ -50,6 +50,7 @@ class SpringApplicationRunListeners {
 		this.applicationStartup = applicationStartup;
 	}
 
+	// 开始执行时
 	void starting(ConfigurableBootstrapContext bootstrapContext, Class<?> mainApplicationClass) {
 		doWithListeners("spring.boot.application.starting", (listener) -> listener.starting(bootstrapContext),
 				(step) -> {
@@ -59,6 +60,7 @@ class SpringApplicationRunListeners {
 				});
 	}
 
+	// 环境刚建立好时
 	void environmentPrepared(ConfigurableBootstrapContext bootstrapContext, ConfigurableEnvironment environment) {
 		doWithListeners("spring.boot.application.environment-prepared",
 				(listener) -> listener.environmentPrepared(bootstrapContext, environment));
