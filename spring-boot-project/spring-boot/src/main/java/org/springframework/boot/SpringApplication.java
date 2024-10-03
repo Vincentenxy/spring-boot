@@ -330,7 +330,7 @@ public class SpringApplication {
 	 * @return a running {@link ApplicationContext}
 	 */
 	public ConfigurableApplicationContext run(String... args) {
-		// 1.监视器，计算启动改动时间
+		// 1.监视器，计算启动时间
 		Startup startup = Startup.create();
 
 		// 2. 注册一个销毁的回调钩子
@@ -350,50 +350,50 @@ public class SpringApplication {
 		// 	如果应用有弹出窗口之类的操作，那么在headless模式下这种操作会被阻止
 		configureHeadlessProperty();
 
-
 		// 6. SpringApplicationRunListeners是SpringApplicationRunListener的集合，规定了SpringBoot的生命周期，在各个生命周期广播相应的事件，调用实际的ApplicationListener类
 		// https://blog.csdn.net/u011179993/article/details/51555690
 		SpringApplicationRunListeners listeners = getRunListeners(args);
-		// 启动监听器
+		// 发布应用启动事件
 		listeners.starting(bootstrapContext, this.mainApplicationClass);
 
 		try {
 
-			// 应用启动参数
+			// 7. 应用启动参数
 			//https://blog.csdn.net/weter_drop/article/details/108311428
 			ApplicationArguments applicationArguments = new DefaultApplicationArguments(args);
 
-			// 获取应用配置
+			// 8. 获取应用配置
 			ConfigurableEnvironment environment = prepareEnvironment(listeners, bootstrapContext, applicationArguments);
 
-			// 准备启动banner
+			// 9. 准备打印banner
 			Banner printedBanner = printBanner(environment);
 
-			// 创建spring应用上下文
+			// 10. 创建spring应用上下文
 			context = createApplicationContext();
 
-			// 设置上下文的启动定时器
+			// 11. 设置上下文的启动定时器
 			context.setApplicationStartup(this.applicationStartup);
 
-			// 准备上下文
+			// 12. 准备上下文
 			prepareContext(bootstrapContext, context, environment, listeners, applicationArguments, printedBanner);
 
-			// 刷新配置
+			// 13. 刷新上下文
 			refreshContext(context);
 
-			// 刷新配置后续处理
+			// 14. 刷新上下文后续处理，方法默认为空，没有处理代码
+			// 在应用程序上下文被更新后执行一些自定义的初始化操作（添加额外的属性，启动后台任务等），方便扩展springboot的初始化和启动过程
 			afterRefresh(context, applicationArguments);
 
-			// 启动计时器
+			// 15. 启动计时器
 			startup.started();
 			if (this.logStartupInfo) {
 				new StartupInfoLogger(this.mainApplicationClass, environment).logStarted(getApplicationLog(), startup);
 			}
 
-			// 监听启动
+			// 16. 发布应用上下文启动完成事件
 			listeners.started(context, startup.timeTakenToStarted());
 
-			//
+			// 17. 执行runner运行器
 			callRunners(context, applicationArguments);
 		}
 		catch (Throwable ex) {
@@ -401,12 +401,15 @@ public class SpringApplication {
 		}
 		try {
 			if (context.isRunning()) {
+				// 发布应用上下文就绪事件
 				listeners.ready(context, startup.ready());
 			}
 		}
 		catch (Throwable ex) {
 			throw handleRunFailure(context, ex, null);
 		}
+
+		// 返回应用上下文
 		return context;
 	}
 
@@ -448,32 +451,56 @@ public class SpringApplication {
 		return environmentType;
 	}
 
+	/**
+	 * 准备上下文
+	 * @param bootstrapContext
+	 * @param context
+	 * @param environment
+	 * @param listeners
+	 * @param applicationArguments
+	 * @param printedBanner
+	 */
 	private void prepareContext(DefaultBootstrapContext bootstrapContext, ConfigurableApplicationContext context,
 			ConfigurableEnvironment environment, SpringApplicationRunListeners listeners,
 			ApplicationArguments applicationArguments, Banner printedBanner) {
+		// 设置环境
 		context.setEnvironment(environment);
+
+		// 上下文初始化之后的处理
 		postProcessApplicationContext(context);
+
+		//
 		addAotGeneratedInitializerIfNecessary(this.initializers);
+
 		applyInitializers(context);
+
+		// 监听上下文是否准备完成
 		listeners.contextPrepared(context);
+
 		bootstrapContext.close(context);
+
 		if (this.logStartupInfo) {
 			logStartupInfo(context.getParent() == null);
 			logStartupInfo(context);
 			logStartupProfileInfo(context);
 		}
+
 		// Add boot specific singleton beans
 		ConfigurableListableBeanFactory beanFactory = context.getBeanFactory();
+
 		beanFactory.registerSingleton("springApplicationArguments", applicationArguments);
+
 		if (printedBanner != null) {
 			beanFactory.registerSingleton("springBootBanner", printedBanner);
 		}
+
 		if (beanFactory instanceof AbstractAutowireCapableBeanFactory autowireCapableBeanFactory) {
 			autowireCapableBeanFactory.setAllowCircularReferences(this.allowCircularReferences);
 			if (beanFactory instanceof DefaultListableBeanFactory listableBeanFactory) {
 				listableBeanFactory.setAllowBeanDefinitionOverriding(this.allowBeanDefinitionOverriding);
 			}
 		}
+
 		if (this.lazyInitialization) {
 			context.addBeanFactoryPostProcessor(new LazyInitializationBeanFactoryPostProcessor());
 		}
@@ -623,6 +650,11 @@ public class SpringApplication {
 		}
 	}
 
+	/**
+	 * 打印启动的banner
+	 * @param environment
+	 * @return
+	 */
 	private Banner printBanner(ConfigurableEnvironment environment) {
 		if (this.bannerMode == Banner.Mode.OFF) {
 			return null;
@@ -834,14 +866,23 @@ public class SpringApplication {
 	}
 
 	private void callRunners(ConfigurableApplicationContext context, ApplicationArguments args) {
+		// 获取bean工厂
 		ConfigurableListableBeanFactory beanFactory = context.getBeanFactory();
+
+		// 获取所有类型为runner的bean的名称
 		String[] beanNames = beanFactory.getBeanNamesForType(Runner.class);
+
+		// 创建bean实例到bean名称的映射
 		Map<Runner, String> instancesToBeanNames = new IdentityHashMap<>();
 		for (String beanName : beanNames) {
 			instancesToBeanNames.put(beanFactory.getBean(beanName, Runner.class), beanName);
 		}
+
+		// 排序，如order
 		Comparator<Object> comparator = getOrderComparator(beanFactory)
 			.withSourceProvider(new FactoryAwareOrderSourceProvider(beanFactory, instancesToBeanNames));
+
+		// 执行runner
 		instancesToBeanNames.keySet().stream().sorted(comparator).forEach((runner) -> callRunner(runner, args));
 	}
 
@@ -1819,6 +1860,7 @@ public class SpringApplication {
 	 */
 	private static final class StandardStartup extends Startup {
 
+		// 类创建时间
 		private final Long startTime = System.currentTimeMillis();
 
 		@Override
