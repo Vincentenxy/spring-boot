@@ -33,18 +33,21 @@ public enum WebApplicationType {
 	/**
 	 * The application should not run as a web application and should not start an
 	 * embedded web server.
+	 * 运行后自动关闭，没有内置服务器，不监听任何端口
 	 */
 	NONE,
 
 	/**
 	 * The application should run as a servlet-based web application and should start an
 	 * embedded servlet web server.
+	 * 同步阻塞式
 	 */
 	SERVLET,
 
 	/**
 	 * The application should run as a reactive web application and should start an
 	 * embedded reactive web server.
+	 * 异步非阻塞
 	 */
 	REACTIVE;
 
@@ -58,7 +61,8 @@ public enum WebApplicationType {
 	private static final String JERSEY_INDICATOR_CLASS = "org.glassfish.jersey.servlet.ServletContainer";
 
 	static WebApplicationType deduceFromClasspath() {
-		if (ClassUtils.isPresent(WEBFLUX_INDICATOR_CLASS, null) && !ClassUtils.isPresent(WEBMVC_INDICATOR_CLASS, null)
+		if (ClassUtils.isPresent(WEBFLUX_INDICATOR_CLASS, null)
+				&& !ClassUtils.isPresent(WEBMVC_INDICATOR_CLASS, null)
 				&& !ClassUtils.isPresent(JERSEY_INDICATOR_CLASS, null)) {
 			return WebApplicationType.REACTIVE;
 		}

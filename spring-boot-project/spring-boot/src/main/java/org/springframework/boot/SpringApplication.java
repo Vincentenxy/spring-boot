@@ -298,7 +298,7 @@ public class SpringApplication {
 	public SpringApplication(ResourceLoader resourceLoader, Class<?>... primarySources) {
 
 		// 初始化相关参数
-		this.resourceLoader = resourceLoader;
+		this.resourceLoader = resourceLoader;  // 通过this进来的 resourceLoader = null
 		Assert.notNull(primarySources, "PrimarySources must not be null");
 
 		this.primarySources = new LinkedHashSet<>(Arrays.asList(primarySources));
@@ -1473,7 +1473,7 @@ public class SpringApplication {
 	 * @return the running {@link ApplicationContext}
 	 */
 	public static ConfigurableApplicationContext run(Class<?>[] primarySources, String[] args) {
-		// 创建一个springApplication对象，并开始执行
+		// 创建一个springApplication对象后，并开始执行
 		return new SpringApplication(primarySources).run(args);
 	}
 
