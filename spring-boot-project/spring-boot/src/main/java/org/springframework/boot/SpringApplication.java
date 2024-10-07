@@ -302,7 +302,10 @@ public class SpringApplication {
 		Assert.notNull(primarySources, "PrimarySources must not be null");
 
 		this.primarySources = new LinkedHashSet<>(Arrays.asList(primarySources));
+
+		// 判断应用的启动类型
 		this.webApplicationType = WebApplicationType.deduceFromClasspath();
+
 		this.bootstrapRegistryInitializers = new ArrayList<>(
 				getSpringFactoriesInstances(BootstrapRegistryInitializer.class));
 
@@ -415,7 +418,7 @@ public class SpringApplication {
 
 	private DefaultBootstrapContext createBootstrapContext() {
 		DefaultBootstrapContext bootstrapContext = new DefaultBootstrapContext();
-		this.bootstrapRegistryInitializers.forEach((initializer) -> initializer.initialize(bootstrapContext));
+		this.bootstrapRegistryInitializers.forEach((initializer) -> initializer.initialize(bootstrapContext));  // 目前为空，对应方法没有实现
 		return bootstrapContext;
 	}
 
